@@ -10,12 +10,13 @@ import hashlib
 from Synthesizers.base import Base_TTS_Task, ParamItem, init_params_config
 
 def get_params_config():
+
     try:
-        with open(os.path.join("Synthesizers/gsv_fast/configs", "params_config.json"), "r", encoding="utf-8") as f:
+        with open(os.path.join(os.path.dirname(os.path.dirname(__file__)), "gsv_fast/configs/params_config.json"), "r", encoding="utf-8") as f:
             return init_params_config(json.load(f))
     except:
         raise FileNotFoundError("params_config.json not found or invalid.")
-    
+
 
 params_config = get_params_config()
 
@@ -41,11 +42,11 @@ class GSV_TTS_Task(Base_TTS_Task):
     repetition_penalty : Optional[float] = 1.35
     # the gsv_fast model only supports 32000 sample rate
     sample_rate: int = 32000
-    
+
     def __init__(self, other_task: Union[BaseModel, dict, None] = None, **data):
         data.setdefault('params_config', params_config)
         super().__init__(other_task, **data)
-    
+
     @property
     def md5(self):
         m = hashlib.md5()
@@ -65,6 +66,3 @@ class GSV_TTS_Task(Base_TTS_Task):
             m.update(str(self.cut_method).encode())
             m.update(str(self.emotion).encode())
         return m.hexdigest()
-    
-    
-

@@ -9,7 +9,7 @@ from .ssml_dealer import SSML_Dealer
 
 from time import time as tt
 import numpy as np
-import hashlib  
+import hashlib
 import soundfile as sf
 
 from .gsv_config import load_infer_config, auto_generate_infer_config, get_device_info
@@ -50,7 +50,7 @@ class GSV_Synthesizer(Base_TTS_Synthesizer):
         super().__init__()
 
         if config_path is None:
-            config_path = "gsv_config.json"
+            config_path =os.path.join(os.path.dirname(__file__),"../../gsv_config.json")
         config_dict = load_config(config_path)
         config_dict.update(kwargs)
         for key, value in config_dict.items():
@@ -71,7 +71,7 @@ class GSV_Synthesizer(Base_TTS_Synthesizer):
 
         self.lock = threading.Lock()
         self.load_character(self.default_character)
-        ui_config_path = os.path.join("Synthesizers/gsv_fast/configs", "ui_config.json")
+        ui_config_path = os.path.join(os.path.dirname(__file__) ,"configs/ui_config.json")
         with open(ui_config_path, 'r', encoding='utf-8') as f:
             self.ui_config = json.load(f)
 
@@ -159,11 +159,11 @@ class GSV_Synthesizer(Base_TTS_Synthesizer):
                 # 尝试调用auto_get_infer_config
                 auto_generate_infer_config(character_path)
                 self.load_character(character)
-                return 
+                return
             except:
                 # 报错
                 raise Exception("找不到模型文件！请把有效模型放置在模型文件夹下，确保其中至少有pth、ckpt和wav三种文件。")
-        
+
         self.character = character
 
         t0 = tt()
@@ -247,7 +247,7 @@ class GSV_Synthesizer(Base_TTS_Synthesizer):
                 ref_audio_path = os.path.join(os.path.join(self.models_path,self.character), relative_path)
                 prompt_text = details['prompt_text']
                 prompt_language = details['prompt_language']
-                
+
                 return ref_audio_path, prompt_text, prompt_language
         return None, None, None
 
@@ -274,7 +274,7 @@ class GSV_Synthesizer(Base_TTS_Synthesizer):
 
         text = text.replace("\r", "\n").replace("<br>", "\n").replace("\t", " ")
         text = text.replace("……","。").replace("…","。").replace("\n\n","\n").replace("。\n","\n").replace("\n", "。\n")
-        
+
         assert os.path.exists(ref_audio_path), f"找不到参考音频文件: {ref_audio_path}"
         prompt_cache_path = ""
 
@@ -306,7 +306,7 @@ class GSV_Synthesizer(Base_TTS_Synthesizer):
             "top_k": top_k,
             "top_p": top_p,
             "temperature": temperature,
-            "text_split_method": cut_method, 
+            "text_split_method": cut_method,
             "batch_size": batch_size,
             "speed_factor": speed,
             "ref_text_free": ref_free,
@@ -324,7 +324,7 @@ class GSV_Synthesizer(Base_TTS_Synthesizer):
             else:
                 return self.get_streaming_tts_wav(params)
 
-    @staticmethod   
+    @staticmethod
     def params_parser(data) -> TTS_Task:
         task = TTS_Task(**data)
         return task

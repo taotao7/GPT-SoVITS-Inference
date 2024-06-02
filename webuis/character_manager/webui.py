@@ -13,7 +13,7 @@ global state
 
 state = {   'models_path': r"trained",
             'character_list': [],
-            
+
 
             'edited_character_path': '',
             'edited_character_name': '',
@@ -21,7 +21,7 @@ state = {   'models_path': r"trained",
             'pth_file_found': [],
             'wav_file_found': [],
 
-            
+
             }
 
 global infer_config
@@ -29,15 +29,15 @@ infer_config = {
 }
 
 # 取得模型文件夹路径
-config_path = "gsv_config.json"
+config_path = os.path.join( os.path.dirname(__file__),"../../gsv_config.json")
 state["models_path"] = "trained"
 locale_language = "auto"
 if os.path.exists(config_path):
     with open(config_path, 'r', encoding='utf-8') as f:
         config = json.load(f)
         state["models_path"] = config.get("models_path", "trained")
-        
-        
+
+
 from tools.i18n.i18n import I18nAuto
 
 
@@ -46,11 +46,11 @@ i18n = I18nAuto(None, os.path.join(os.path.dirname(__file__), "i18n/locale"))
 # 微软提供的SSML情感表
 emotional_styles = [
     "default",
-    "advertisement_upbeat", "affectionate", "angry", "assistant", "calm", "chat", "cheerful", 
-    "customerservice", "depressed", "disgruntled", "documentary-narration", "embarrassed", 
-    "empathetic", "envious", "excited", "fearful", "friendly", "gentle", "hopeful", "lyrical", 
-    "narration-professional", "narration-relaxed", "newscast", "newscast-casual", "newscast-formal", 
-    "poetry-reading", "sad", "serious", "shouting", "sports_commentary", "sports_commentary_excited", 
+    "advertisement_upbeat", "affectionate", "angry", "assistant", "calm", "chat", "cheerful",
+    "customerservice", "depressed", "disgruntled", "documentary-narration", "embarrassed",
+    "empathetic", "envious", "excited", "fearful", "friendly", "gentle", "hopeful", "lyrical",
+    "narration-professional", "narration-relaxed", "newscast", "newscast-casual", "newscast-formal",
+    "poetry-reading", "sad", "serious", "shouting", "sports_commentary", "sports_commentary_excited",
     "whispering", "terrified", "unfriendly"
 ]
 
@@ -106,7 +106,7 @@ def split_file_name(file_name):
         base_name=os.path.basename(file_name)
     except:
         base_name=file_name
-  
+
     final_name = os.path.splitext(base_name)[0]
     return final_name
 
@@ -123,8 +123,8 @@ def clear_infer_config():
 clear_infer_config()
 
 def read_json_from_file(character_dropdown,models_path  ):
-    state['edited_character_name'] = character_dropdown  
-    state['models_path']=models_path 
+    state['edited_character_name'] = character_dropdown
+    state['models_path']=models_path
     state['edited_character_path'] = os.path.join(state['models_path'], state['edited_character_name'])
     state['ckpt_file_found'], state['pth_file_found'], state['wav_file_found'] = scan_files(state['edited_character_path'])
     print(i18n("当前人物变更为: ")+state['edited_character_name'])
@@ -155,7 +155,7 @@ def save_json():
         with open(json_path, "w", encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
         gr.Info(i18n("保存成功！"))
-        
+
     except:
         gr.Error(i18n("文件打开失败，保存失败！"))
         raise Exception(i18n("保存失败！"))
@@ -181,20 +181,20 @@ def scan_files(character_path):
                 pth_file_found.append(rev_path)
             elif file.lower().endswith(".wav"):
                 wav_file_found.append(rev_path)
-            
+
     return ckpt_file_found, pth_file_found, wav_file_found
 
 def auto_generate_json(character_dropdown, models_path):
     # 将选中人物设定为当前人物
-    state['edited_character_name'] = character_dropdown  
-    state['models_path'] = models_path 
+    state['edited_character_name'] = character_dropdown
+    state['models_path'] = models_path
     state['edited_character_path'] = os.path.join(state['models_path'], state['edited_character_name'])
     print(i18n(f"当前人物变更为: {state['edited_character_name']}"))
     clear_infer_config()
     character_path = state['edited_character_path']
-    
+
     ckpt_file_found, pth_file_found, wav_file_found = scan_files(character_path)
-   
+
     if len(ckpt_file_found) == 0 or len(pth_file_found) == 0:
         gr.Error(i18n("找不到模型文件！请把有效文件放置在文件夹下！！！"))
         raise Exception(i18n("找不到模型文件！请把有效文件放置在文件夹下！！！"))
@@ -207,7 +207,7 @@ def auto_generate_json(character_dropdown, models_path):
 
         infer_config['gpt_path'] = gpt_path
         infer_config['sovits_path'] = sovits_path
-    
+
     if len(wav_file_found) == 0:
         return generate_info_bar()
     else:
@@ -227,7 +227,7 @@ def scan_subfolder(models_path):
 
 
 def add_emotion():
-    
+
     unused_emotional_style = ''
     for style in emotional_styles:
         style_in_list = False
@@ -238,7 +238,7 @@ def add_emotion():
         if not style_in_list:
             unused_emotional_style = style
             break
-    
+
     ref_wav_path = state['wav_file_found'][0]
     infer_config['emotion_list'].append([f'{unused_emotional_style}',    {
         'ref_wav_path':ref_wav_path,'prompt_text':split_file_name(ref_wav_path),'prompt_language':'auto'}])
@@ -252,13 +252,13 @@ def change_pt_files(version_textbox, sovits_model_dropdown, gpt_model_dropdown):
     pass
 
 def change_parameters(index, wav_path, emotion_list, prompt_language, prompt_text = ""):
-    
+
     # Convert index to integer in case it's passed as a string
     index = int(index)
-    
+
     if prompt_text=="" or prompt_text is None:
         prompt_text = split_file_name(wav_path)
-    
+
     infer_config['emotion_list'][index-1][0]=emotion_list
     infer_config['emotion_list'][index-1][1]['ref_wav_path'] = wav_path
     infer_config['emotion_list'][index-1][1]['prompt_text'] = prompt_text
@@ -268,7 +268,7 @@ def change_parameters(index, wav_path, emotion_list, prompt_language, prompt_tex
 
 
 def run_as_tab(app: gr.Blocks):
-    with gr.Row() as status_bar:       
+    with gr.Row() as status_bar:
         # 创建模型文件夹路径的输入框
         models_path = gr.Textbox(value=state["models_path"], label=i18n("模型文件夹路径"), scale=3)
 
@@ -280,9 +280,9 @@ def run_as_tab(app: gr.Blocks):
         read_info_from_json_button = gr.Button(i18n("从json中读取"), size="lg", scale=2, variant="secondary")
         # 创建自动生成json的按钮并设置点击事件
         auto_generate_info_button = gr.Button(i18n("自动生成info"), size="lg", scale=2, variant="primary")
-        
+
         scan_button.click(scan_subfolder, inputs=[models_path], outputs=[character_dropdown])
-    
+
     gr.HTML(i18n("""<p>这是模型管理界面，为了实现对多段参考音频分配情感设计，如果您只有一段可不使用这个界面</p><p>若有疑问或需要进一步了解，可参考文档：<a href="https://www.yuque.com/xter/zibxlp/hme8bw2r28vad3le">点击查看详细文档</a>。</p>"""))
     gr.Markdown(i18n("请修改后点击下方按钮进行保存"))
 
@@ -290,7 +290,7 @@ def run_as_tab(app: gr.Blocks):
     with gr.Row() as submit_bar:
         save_json_button = gr.Button(i18n("保存json\n（可能不会有完成提示，没报错就是成功）"), scale=2, variant="primary")
         save_json_button.click(save_json)
-    
+
     # 模型信息
     with gr.Row():
         with gr.Column(scale=1):
@@ -302,7 +302,7 @@ def run_as_tab(app: gr.Blocks):
             gpt_model_dropdown.input(change_pt_files, inputs=[version_textbox, sovits_model_dropdown, gpt_model_dropdown], outputs=None)
             sovits_model_dropdown.input(change_pt_files, inputs=[version_textbox, sovits_model_dropdown, gpt_model_dropdown], outputs=None)
             column_items = [current_character_textbox, version_textbox, gpt_model_dropdown, sovits_model_dropdown]
-        
+
         with gr.Column(scale=3):
             add_emotion_button = gr.Button(i18n("添加情感"), size="lg", scale=2, variant="primary")
 
@@ -320,7 +320,7 @@ def run_as_tab(app: gr.Blocks):
                     prompt_language.input(change_parameters, inputs=[row_index, wav_path, emotional_list, prompt_language, prompt_text], outputs=[wav_path, emotional_list, prompt_language, prompt_text, audio_preview])
                     wav_path.input(change_parameters, inputs=[row_index, wav_path, emotional_list, prompt_language], outputs=[wav_path, emotional_list, prompt_language, prompt_text, audio_preview])
                     prompt_text.input(change_parameters, inputs=[row_index, wav_path, emotional_list, prompt_language, prompt_text], outputs=[wav_path, emotional_list, prompt_language, prompt_text, audio_preview])
-                    
+
                     column_items.append(row_index)
                     column_items.append(prompt_language)
                     column_items.append(emotional_list)
@@ -331,7 +331,7 @@ def run_as_tab(app: gr.Blocks):
     add_emotion_button.click(add_emotion, outputs=column_items)
     read_info_from_json_button.click(read_json_from_file, inputs=[character_dropdown,models_path] , outputs=column_items)
     auto_generate_info_button.click(auto_generate_json, inputs=[character_dropdown,models_path], outputs=column_items)
-    
+
 if __name__ == '__main__':
     with gr.Blocks() as app:
         run_as_tab(app)

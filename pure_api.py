@@ -4,7 +4,7 @@ import importlib
 
 now_dir = os.getcwd()
 sys.path.append(now_dir)
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from src.common_config_manager import __version__, api_config
 import soundfile as sf
@@ -12,7 +12,7 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse, FileResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 import tempfile
-import uvicorn  
+import uvicorn
 import json
 
 # 将当前文件所在的目录添加到 sys.path
@@ -33,17 +33,17 @@ async def character_list(request: Request):
     return res
 
 async def tts(request: Request):
-    
+
     from time import time as tt
     t1 = tt()
     print(f"Request Time: {t1}")
-    
+
     # 尝试从JSON中获取数据，如果不是JSON，则从查询参数中获取
     if request.method == "GET":
         data = request.query_params
     else:
         data = await request.json()
-    
+
     task:Base_TTS_Task = tts_synthesizer.params_parser(data)
 
     if task.task_type == "text" and task.text.strip() == "":
@@ -90,7 +90,7 @@ if __name__ == "__main__":
     ipv4_address = get_localhost_ipv4_address(tts_host)
     ipv4_link = f"http://{ipv4_address}:{tts_port}"
     print(f"INFO:     Local Network URL: {ipv4_link}")
-    
+
     app = FastAPI()
 
     # 设置CORS
@@ -104,4 +104,3 @@ if __name__ == "__main__":
     app.add_api_route('/tts', tts, methods=["GET", "POST"])
     app.add_api_route('/character_list', character_list, methods=["GET"])
     uvicorn.run(app, host=tts_host, port=tts_port)
-

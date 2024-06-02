@@ -2,8 +2,10 @@ import json
 import locale
 import os
 
+default_i18n_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "i18n/locale")
 
-def load_language_list(language, locale_path="./i18n/locale"):
+
+def load_language_list(language, locale_path=default_i18n_dir):
     with open(os.path.join(locale_path, f"{language}.json"), "r", encoding="utf-8") as f:
         language_list = json.load(f)
     return language_list
@@ -11,7 +13,7 @@ def load_language_list(language, locale_path="./i18n/locale"):
 from src.common_config_manager import app_config
 
 class I18nAuto:
-    def __init__(self, language=None, locale_path="./i18n/locale"):
+    def __init__(self, language=None, locale_path=default_i18n_dir):
         if language in ["auto", None]:
             if app_config.locale in ["auto", None, ""]:
                 language = locale.getdefaultlocale()[0]

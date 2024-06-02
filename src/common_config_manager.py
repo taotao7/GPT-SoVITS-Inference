@@ -1,22 +1,25 @@
 import os, sys, json
-from typing import List, Any, Optional ,Dict, Literal   
+from typing import List, Any, Optional ,Dict, Literal
 from pydantic import BaseModel, Field, model_validator
 
 __version__ = "2.6.1"
 
 from Synthesizers.base import load_config
 
+# commmon config current path comman_config.json
+comman_config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "common_config.json")
 
-class Api_Config(BaseModel):   
+
+class Api_Config(BaseModel):
     config_path:str = None
     tts_port: int = 5000
-    tts_host: str = "0.0.0.0" 
+    tts_host: str = "0.0.0.0"
     synthesizer: str = "gsv_fast"
 
 
     def __init__(self, config_path = None):
         super().__init__()
-        
+
         self.config_path = config_path
         assert os.path.exists(self.config_path), f"配置文件不存在: {self.config_path}"
         if os.path.exists(self.config_path):
@@ -24,7 +27,7 @@ class Api_Config(BaseModel):
             config:dict = all_config.get("common", {})
             for key, value in config.items():
                 setattr(self, key, value)
-        
+
 class App_Config(BaseModel):
 
     config_path:str = None
@@ -46,11 +49,11 @@ class App_Config(BaseModel):
     @staticmethod
     def check_port(port:int, server_name:str):
         url = f"http://{server_name}:{port}"
-     
-    
+
+
     def __init__(self, config_path = None):
         super().__init__()
-        
+
         self.config_path = config_path
         assert os.path.exists(self.config_path), f"配置文件不存在: {self.config_path}"
         if os.path.exists(self.config_path):
@@ -59,7 +62,5 @@ class App_Config(BaseModel):
             for key, value in config.items():
                 setattr(self, key, value)
 
-app_config = App_Config("common_config.json")
-api_config = Api_Config("common_config.json")
-
-
+app_config = App_Config(comman_config_path)
+api_config = Api_Config(comman_config_path)
